@@ -4,7 +4,7 @@
   "features": {
     "ghcr.io/devcontainers/features/nix:1": {
       "version": "latest",
-      "flakeUri": "github:mcconnellj/Mono-Repo/flake.nix"
+      "flakeUri": "github:mcconnellj/Mono-Repo/main#python"
     }
   },
   "customizations": {
