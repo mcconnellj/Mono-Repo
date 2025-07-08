@@ -4,7 +4,8 @@
   "features": {
     "ghcr.io/devcontainers/features/nix:1": {
       "version": "latest",
-      "uri": "github:mcconnellj/Mono-Repo#python"
+      "uri": "github:mcconnellj/Mono-Repo#python",
+      "extraNixConfig": "experimental-features = nix-command flakes"
     }
   },
   "customizations": {
