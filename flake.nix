@@ -7,27 +7,33 @@
     mach-nix.url = "github:DavHau/mach-nix";
   };
 
-  outputs = { self, nixpkgs, flake-utils, mach-nix, ... }:
+  outputs = { self, nixpkgs, flake-utils, mach-nix }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
         mach = mach-nix.lib.${system};
         whisperWriterReqs = builtins.readFile ./whisper-writer/requirements.txt;
       in {
-        devShells.default = pkgs.mkShell {
-          buildInputs = [
-            pkgs.python311
+        # Expose a python package output with Python 3.11 environment
+        packages = {
+          python = mach.mkPythonShell {
+            python = pkgs.python311;
+            requirements = whisperWriterReqs;
+          };
+        };
 
-            # Python environment based ONLY on whisper-writer requirements.txt
-            (mach.mkPythonShell {
-              requirements = whisperWriterReqs;
-            })
-          ];
+        # Optional devShell that uses the python package
+        devShells = {
+          default = pkgs.mkShell {
+            buildInputs = [
+              packages.python
+            ];
 
-          shellHook = ''
-            echo "WhisperWriter dev shell ready!"
-            python whisper-writer/run.py
-          '';
+            shellHook = ''
+              echo "WhisperWriter dev shell ready!"
+              python whisper-writer/run.py
+            '';
+          };
         };
       });
 }

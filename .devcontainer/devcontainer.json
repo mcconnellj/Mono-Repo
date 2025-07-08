@@ -3,7 +3,8 @@
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "features": {
     "ghcr.io/devcontainers/features/nix:1": {
-      "version": "latest"
+      "version": "latest",
+      "uri": "github:mcconnellj/Mono-Repo#python"
     }
   },
   "customizations": {
@@ -18,5 +19,5 @@
   },
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
   "workspaceFolder": "/workspace",
-  "postCreateCommand": "/workspace/scripts/post-create.sh"
+  "postCreateCommand": "" //workspace/scripts/post-create.sh"
 }
