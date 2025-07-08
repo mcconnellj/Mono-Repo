@@ -22,18 +22,6 @@
           };
         };
 
-        # Optional devShell that uses the python package
-        devShells = {
-          default = pkgs.mkShell {
-            buildInputs = [
-              packages.python
-            ];
-
-            shellHook = ''
-              echo "WhisperWriter dev shell ready!"
-              python whisper-writer/run.py
-            '';
-          };
-        };
+        devShell = packages.python;
       });
 }
