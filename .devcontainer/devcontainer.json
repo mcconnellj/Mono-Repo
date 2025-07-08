@@ -3,17 +3,20 @@
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "features": {
     "ghcr.io/devcontainers/features/nix:1": {
-      "version": "latest",
-      "flakeUri": "github:mcconnellj/Mono-Repo/main#python"
+      "version": "latest"
     }
   },
   "customizations": {
     "vscode": {
       "extensions": [
-        "saoudrizwan.claude-dev"
+        "saoudrizwan.claude-dev",
+        "bbenoist.nix",
+        "esbenp.prettier-vscode",
+        "ms-python.python"
       ]
     }
   },
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
-  "workspaceFolder": "/workspace"
+  "workspaceFolder": "/workspace",
+  "postCreateCommand": "/workspace/scripts/post-create.sh"
 }

@@ -1,21 +1,33 @@
 {
-  description = "Flake for Python 3.11 environment";
-  
+  description = "WhisperWriter environment: Whisper + GUI dictation";
+
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+    flake-utils.url = "github:numtide/flake-utils";
+    mach-nix.url = "github:DavHau/mach-nix";
   };
 
-  outputs = { self, nixpkgs }: 
-    let 
-      system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
-    in {
-      devShells.python = pkgs.mkShell {
-        buildInputs = [
-          pkgs.python311
-          pkgs.python311Packages.pip
-          pkgs.python311Packages.virtualenv
-        ];
-      };
-    };
+  outputs = { self, nixpkgs, flake-utils, mach-nix, ... }:
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = import nixpkgs { inherit system; };
+        mach = mach-nix.lib.${system};
+        whisperWriterReqs = builtins.readFile ./whisper-writer/requirements.txt;
+      in {
+        devShells.default = pkgs.mkShell {
+          buildInputs = [
+            pkgs.python311
+
+            # Python environment based ONLY on whisper-writer requirements.txt
+            (mach.mkPythonShell {
+              requirements = whisperWriterReqs;
+            })
+          ];
+
+          shellHook = ''
+            echo "WhisperWriter dev shell ready!"
+            python whisper-writer/run.py
+          '';
+        };
+      });
 }
