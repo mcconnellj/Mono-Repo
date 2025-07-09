@@ -1,5 +1,5 @@
 {
-  description = "Python 3.11 environment with drequirements.txt auto-installed";
+  description = "Python 3.11 environment with requirements.txt auto-installed";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
@@ -15,26 +15,24 @@
 
         python = pkgs.python311;
 
-        drequirements = pkgs.runCommand "install-drequirements"
+        requirements = pkgs.runCommand "install-requirements"
           {
             buildInputs = [ python pkgs.python311Packages.pip ];
-            # Copy drequirements.txt into the build context
-            src = ./drequirements.txt;
+            src = ./requirements.txt;
           } ''
             mkdir -p $out
-            export HOME=$(mktemp -d)  # Required for pip cache to work properly
+            export HOME=$(mktemp -d)
             pip install --prefix=$out --no-warn-script-location -r $src
           '';
       in {
         devShells.default = pkgs.mkShell {
           buildInputs = [ python ];
 
-          # Makes installed packages available in the devShell
-          PYTHONPATH = "${drequirements}/${python.sitePackages}";
+          PYTHONPATH = "${requirements}/${python.sitePackages}";
 
           shellHook = ''
             echo "Python 3.11 dev environment ready."
-            echo "Installing packages from drequirements.txt..."
+            echo "Packages installed from requirements.txt"
           '';
         };
       }
