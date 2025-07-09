@@ -18,7 +18,7 @@
             python
             pkgs.python311Packages.pip
             pkgs.gcc
-            pkgs.pkgconfig
+            pkgs."pkg-config"
             pkgs.libffi
             pkgs.zlib
             pkgs.python311Full
