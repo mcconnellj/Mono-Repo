@@ -10,38 +10,23 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
-
         python = pkgs.python311;
 
-        requirements = pkgs.runCommand "install-requirements" {
-          buildInputs = [
-            python
-            pkgs.python311Packages.pip
-            pkgs.gcc
-            pkgs."pkg-config"
-            pkgs.libffi
-            pkgs.zlib
-            pkgs.python311Full
-            pkgs.linuxHeaders
-          ];
-          src = ./requirements.txt;
-        } ''
-          mkdir -p $out
-          export HOME=$(mktemp -d)
-          export CFLAGS="-I${pkgs.libffi.dev}/include -I${pkgs.zlib.dev}/include"
-          export LDFLAGS="-L${pkgs.libffi.out}/lib -L${pkgs.zlib.out}/lib"
-          pip install --prefix=$out --no-warn-script-location -r $src
-        '';
+        # Manually install evdev from nixpkgs to avoid pip build issues
+        pythonPackages = pkgs.python311Packages;
 
       in {
         devShells.default = pkgs.mkShell {
-          buildInputs = [ python ];
-
-          PYTHONPATH = "${requirements}/${python.sitePackages}";
+          buildInputs = [
+            python
+            pythonPackages.pip
+            pythonPackages.evdev
+          ];
 
           shellHook = ''
             echo "Python 3.11 dev environment ready."
-            echo "Packages installed from requirements.txt"
+            echo "Installing Python packages from requirements.txt"
+            pip install --no-deps --disable-pip-version-check --requirement requirements.txt || true
           '';
         };
       }
