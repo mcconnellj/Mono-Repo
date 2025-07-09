@@ -11,22 +11,16 @@
       let
         pkgs = import nixpkgs { inherit system; };
         python = pkgs.python311;
-
-        # Manually install evdev from nixpkgs to avoid pip build issues
-        pythonPackages = pkgs.python311Packages;
-
+        pythonEnv = python.withPackages (ps: with ps; [
+          evdev
+          python-dotenv
+        ]);
       in {
         devShells.default = pkgs.mkShell {
-          buildInputs = [
-            python
-            pythonPackages.pip
-            pythonPackages.evdev
-          ];
+          buildInputs = [ pythonEnv ];
 
           shellHook = ''
-            echo "Python 3.11 dev environment ready."
-            echo "Installing Python packages from requirements.txt"
-            pip install --no-deps --disable-pip-version-check --requirement requirements.txt || true
+            echo "Python 3.11 dev environment ready (Nix-managed)."
           '';
         };
       }
