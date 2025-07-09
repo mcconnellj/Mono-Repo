@@ -14,6 +14,7 @@
         pythonEnv = python.withPackages (ps: with ps; [
           evdev
           python-dotenv
+          audioplayer
         ]);
       in {
         devShells.default = pkgs.mkShell {
