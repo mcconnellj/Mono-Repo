@@ -1,25 +1,42 @@
 {
-  description = "WhisperWriter environment: Whisper + GUI dictation";
+  description = "Python 3.11 environment with drequirements.txt auto-installed";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs = { self, nixpkgs, flake-utils }: 
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = import nixpkgs { inherit system; };
-        requirementsFile = ./requirements.txt;
+        pkgs = import nixpkgs {
+          inherit system;
+        };
+
+        python = pkgs.python311;
+
+        drequirements = pkgs.runCommand "install-drequirements"
+          {
+            buildInputs = [ python pkgs.python311Packages.pip ];
+            # Copy drequirements.txt into the build context
+            src = ./drequirements.txt;
+          } ''
+            mkdir -p $out
+            export HOME=$(mktemp -d)  # Required for pip cache to work properly
+            pip install --prefix=$out --no-warn-script-location -r $src
+          '';
       in {
-        devShell = pkgs.mkShell {
-          buildInputs = [ pkgs.python311 pkgs.python311Packages.pip ];
+        devShells.default = pkgs.mkShell {
+          buildInputs = [ python ];
+
+          # Makes installed packages available in the devShell
+          PYTHONPATH = "${drequirements}/${python.sitePackages}";
 
           shellHook = ''
-            echo "Installing pip packages from requirements.txt..."
-            pip install --upgrade pip
-            pip install -r ${toString requirementsFile}
+            echo "Python 3.11 dev environment ready."
+            echo "Installing packages from drequirements.txt..."
           '';
         };
-      });
+      }
+    );
 }
