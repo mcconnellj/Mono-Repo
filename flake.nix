@@ -22,6 +22,7 @@
             pkgs.libffi
             pkgs.zlib
             pkgs.python311Full
+            pkgs.linuxHeaders
           ];
           src = ./requirements.txt;
         } ''
