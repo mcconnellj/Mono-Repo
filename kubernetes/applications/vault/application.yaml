@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vault
+  namespace: data
+spec:
+  source:
+    repoURL: https://helm.releases.hashicorp.com
+    chart: hashicorp/vault
+    targetRevision: 0.30.0
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: data
+  helm:
+    valueFiles:
+      - 'https://raw.githubusercontent.com/mcconnellj/k3s-server/development/applications/vault/values.yaml'
+      - 'https://raw.githubusercontent.com/mcconnellj/k3s-server/development/applications/vault/development.yaml'

@@ -1,0 +1,7 @@
+{
+  "app": {
+    "source": "https://github.com/argoproj/argo-cd",
+    "revision": "HEAD",
+    "path": "applicationset/examples/git-generator-files-discovery/apps/guestbook"
+  }
+}

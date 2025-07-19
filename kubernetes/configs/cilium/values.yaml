@@ -1,0 +1,28 @@
+# ./configs/cilium/values.yaml
+
+# Enable kube-proxy replacement
+kubeProxyReplacement: true
+
+# Set Pod CIDR range for IPAM (K3s default)
+ipam:
+  operator:
+    clusterPoolIPv4PodCIDRList:
+      - "10.42.0.0/16"
+
+# Enable external IPs and L2 announcements
+l2announcements:
+  enabled: true
+
+externalIPs:
+  enabled: true
+
+# Boost Kubernetes API rate limits
+k8sClientRateLimit:
+  qps: 50
+  burst: 200
+
+# Auto-rollout updated pods
+operator:
+  rollOutPods: true
+
+rollOutCiliumPods: true

@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: multi-cluster-app-set
+spec:
+  generators:
+    - matrix:
+        generators:
+          - git:
+              repoURL: https://github.com/yourorganization/yourrepo.git
+              revision: HEAD
+              directories:
+                - path: myapp/overlays/*
+          - clusters:
+              selector:
+                matchLabels:
+                  argocd.argoproj.io/secret-type: cluster
+                  kubernetes.io/environment: '{{.path.basename}}'
+  template: # used to generate Argo CD Application resources
+    metadata:
+      name: 'myapp-{{path.basename}}' # myapp-dev, myapp-prod
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/yourorganization/yourrepo.git
+        targetRevision: HEAD
+        path: '{{.path.path}}' # myapp/overlays/dev, myapp/overlays/prod
+      destination:
+        server: '{{.server}}' # https://dev.cluster.server, https://prod.cluster.server
+        namespace: default
+      syncPolicy:
+        automated:
+          selfHeal: true
+          prune: true
