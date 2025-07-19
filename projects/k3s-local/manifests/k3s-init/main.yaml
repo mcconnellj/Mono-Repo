@@ -1,0 +1,261 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: core
+  annotations:
+    monitoring: prometheus
+    argocd.argoproj.io/sync-wave: "-10"
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: core
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tenant
+  annotations:
+    monitoring: prometheus
+    argocd.argoproj.io/sync-wave: "-10"
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: tenant
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: edge
+  annotations:
+    monitoring: prometheus
+    argocd.argoproj.io/sync-wave: "-10"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: data
+  annotations:
+    monitoring: prometheus
+    argocd.argoproj.io/sync-wave: "-10"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: argocd
+  labels:
+    name: argocd
+  annotations:
+    monitoring: prometheus
+    argocd.argoproj.io/sync-wave: "-10"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: development
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/secret-type: repository
+  annotations:
+    argocd.argoproj.io/sync-wave: "-10"
+stringData:
+  type: git
+  name: development
+  url: https://github.com/mcconnellj/k3s-server.git
+  targetRevision: development
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: cilium
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-5"
+spec:
+  repo: https://helm.cilium.io/
+  chart: cilium
+  targetNamespace: kube-system
+  version: 1.18.0-pre.0
+---
+apiVersion: "cilium.io/v2alpha1"
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: "first-pool"
+spec:
+  blocks:
+    - start: "192.168.1.240"
+      stop: "192.168.1.249"
+---
+apiVersion: cilium.io/v2alpha1
+kind: CiliumL2AnnouncementPolicy
+metadata:
+  name: default-l2-announcement-policy
+  namespace: kube-system
+spec:
+  externalIPs: true
+  loadBalancerIPs: true
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: argocd
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-5"
+spec:
+  repo: https://argoproj.github.io/argo-helm
+  chart: argo-cd
+  targetNamespace: argocd
+  version: 7.8.18
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: data
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  description: Data storage and services (databases, caches)
+  sourceRepos:
+    - https://git.example.com/data/*
+  destinations:
+    - namespace: data
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: 'external-secrets.io'
+      kind: 'ClusterSecretStore'
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  roles:
+    - name: admin
+      description: Admin for data project
+      policies:
+        - p, proj:data:admin, applications, *, data/*, allow
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: core
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  description: Core platform services (auth, secrets, logging)
+  sourceRepos:
+    - https://git.example.com/core/*
+  destinations:
+    - namespace: core
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: 'external-secrets.io'
+      kind: 'ClusterSecretStore'
+    - group: 'rbac.authorization.k8s.io'
+      kind: 'ClusterRole'
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  roles:
+    - name: admin
+      description: Admin for core project
+      policies:
+        - p, proj:core:admin, applications, *, core/*, allow
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: edge
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  description: Ingress, proxies (e.g., Cilium), and routing components
+  sourceRepos:
+    - https://git.example.com/edge/*
+  destinations:
+    - namespace: edge
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: 'cilium.io'
+      kind: 'CiliumNetworkPolicy'
+    - group: 'gateway.networking.k8s.io'
+      kind: 'Gateway'
+    - group: 'external-secrets.io'
+      kind: 'ClusterSecretStore'
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  roles:
+    - name: admin
+      description: Admin for edge project
+      policies:
+        - p, proj:edge:admin, applications, *, edge/*, allow
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: tenant
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  description: Ingress, proxies (e.g., Cilium), and routing components
+  sourceRepos:
+    - https://git.example.com/edge/*
+  destinations:
+    - namespace: tenant
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: 'cilium.io'
+      kind: 'CiliumNetworkPolicy'
+    - group: 'gateway.networking.k8s.io'
+      kind: 'Gateway'
+    - group: 'external-secrets.io'
+      kind: 'ClusterSecretStore'
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  roles:
+    - name: admin
+      description: Admin for edge project
+      policies:
+        - p, proj:edge:admin, applications, *, tenant/*, allow
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: core-deployment
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: https://github.com/mcconnellj/k3s-server.git
+        revision: development
+        files:
+          - path: 'applications/*/application.yaml'
+  template:
+    metadata:
+      name: '{{ .metadata.name }}'
+    spec:
+      project: default
+      source:
+        repoURL: '{{ .spec.source.repoURL }}'
+        targetRevision: '{{ .spec.source.targetRevision }}'
+        chart: '{{ .spec.source.chart }}'
+        helm:
+          releaseName: '{{ .metadata.name }}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{ .spec.destination.namespace }}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+        retry:
+          limit: 2
