@@ -9,7 +9,10 @@
     "vscode": {
       "extensions": [
         "saoudrizwan.claude-dev",
-        "esbenp.prettier-vscode"
+        "esbenp.prettier-vscode",
+		"redhat.vscode-yaml",
+		"technosophos.vscode-helm",
+		"ms-kubernetes-tools.vscode-kubernetes-tools"
       ],
       "settings": {
         "editor.formatOnSave": true

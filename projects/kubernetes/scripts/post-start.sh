@@ -1,6 +1,5 @@
 #!/bin/bash
 set -x pipefail
-minikube status
 
 echo "🧹 Step 1: Deleting existing Minikube cluster..."
 minikube delete
@@ -13,42 +12,38 @@ echo "✅ Minikube started."
 echo "⏳ Step 3: Waiting for Kubernetes API to become available..."
 sleep 30
 
-echo "🔄 Step 4: Deleting all non-system namespaces..."
-kubectl get ns --no-headers | awk '{print $1}' | grep -vE 'kube-system|default|kube-public' | xargs -r kubectl delete ns
-echo "✅ Finished deleting non-system namespaces."
+# echo "🌐 Step 7: Fetching latest Kro release version..."
+# export KRO_VERSION=$(curl -sL https://api.github.com/repos/kro-run/kro/releases/latest | jq -r '.tag_name | ltrimstr("v")')
+# echo "✅ Kro version set to: $KRO_VERSION"
 
-echo "📦 Step 5: Adding Argo Helm repo..."
-helm repo add argo https://argoproj.github.io/argo-helm
-helm repo update
-echo "✅ Argo Helm repo added and updated."
+# echo "📥 Step 8: Installing Kro Helm chart (version $KRO_VERSION)..."
+# helm install kro oci://ghcr.io/kro-run/kro/kro \
+#   --namespace kro \
+#   --create-namespace \
+#   --version="${KRO_VERSION}"
+# echo "✅ Kro installed."
 
-echo "🛠 Step 6: Installing Argo CD (version 8.1.3)..."
-helm install my-argo-cd argo/argo-cd --version 8.1.3
-echo "✅ Argo CD installed."
-
-echo "🌐 Step 7: Fetching latest Kro release version..."
-export KRO_VERSION=$(curl -sL https://api.github.com/repos/kro-run/kro/releases/latest | jq -r '.tag_name | ltrimstr("v")')
-echo "✅ Kro version set to: $KRO_VERSION"
-
-echo "📥 Step 8: Installing Kro Helm chart (version $KRO_VERSION)..."
-helm install kro oci://ghcr.io/kro-run/kro/kro \
-  --namespace kro \
-  --create-namespace \
-  --version="${KRO_VERSION}"
-echo "✅ Kro installed."
-
-echo "📄 Step 9: Applying bootstrap manifest..."
-kubectl apply -f ./manifests/bootstrap/resourcegraphdefinition.yaml
-echo "✅ Manifest applied."
+# echo "📄 Step 9: Applying bootstrap manifest..."
+# kubectl apply -f ./manifests/bootstrap/rg.yaml
+# echo "✅ Manifest applied."
+# kubectl apply -f instance.yaml
 
 echo "🎉 Setup complete. Argo CD and Kro are installed and ready."
 
-kubectl -n default get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+# kubectl -n default get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/crds/applicationset-crd.yaml
+kubectl apply -f ./manifests/bootstrap/application-sets/applicationset.yaml
 
+sleep 60
+sleep 60
 
+# Password & Forward Port
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo
+kubectl port-forward service/argocd-server -n argocd 8080:443
 
-
-
+# kubectl get ingress test-app -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
 
 # helm install my-n8n oci://8gears.container-registry.com/library/n8n --version 1.0.10
 

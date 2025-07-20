@@ -1,0 +1,44 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: core-deployment
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - matrix:
+        generators:
+          - clusters:
+              selector:
+                matchLabels:
+                  argocd.argoproj.io/secret-type: cluster
+          - git:
+              repoURL: https://github.com/mcconnellj/Mono-Repo.git
+              revision: main
+              files:
+                - path: 'projects/kubernetes/manifests/bootstrap/instances/instance.json'
+  template:
+    metadata:
+      name: '{{ .metadata.name }}'
+    spec:
+      project: default
+      source:
+        repoURL: '{{ .spec.source.repoURL }}'
+        targetRevision: '{{ .spec.source.targetRevision }}'
+        chart: '{{ .spec.source.chart }}'
+        helm:
+          releaseName: '{{ .metadata.name }}'
+      destination:
+        server: '{{.server}}'
+        namespace: '{{ .spec.destination.namespace }}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+        retry:
+          limit: 2
