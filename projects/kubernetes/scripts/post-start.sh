@@ -3,41 +3,22 @@ set -x pipefail
 
 echo "🧹 Step 1: Deleting existing Minikube cluster..."
 minikube delete
-echo "✅ Minikube deleted."
 
 echo "🚀 Step 2: Starting a fresh Minikube cluster..."
 minikube start
-echo "✅ Minikube started."
 
 echo "⏳ Step 3: Waiting for Kubernetes API to become available..."
 sleep 30
-
-# echo "🌐 Step 7: Fetching latest Kro release version..."
-# export KRO_VERSION=$(curl -sL https://api.github.com/repos/kro-run/kro/releases/latest | jq -r '.tag_name | ltrimstr("v")')
-# echo "✅ Kro version set to: $KRO_VERSION"
-
-# echo "📥 Step 8: Installing Kro Helm chart (version $KRO_VERSION)..."
-# helm install kro oci://ghcr.io/kro-run/kro/kro \
-#   --namespace kro \
-#   --create-namespace \
-#   --version="${KRO_VERSION}"
-# echo "✅ Kro installed."
-
-# echo "📄 Step 9: Applying bootstrap manifest..."
-# kubectl apply -f ./manifests/bootstrap/rg.yaml
-# echo "✅ Manifest applied."
-# kubectl apply -f instance.yaml
-
-echo "🎉 Setup complete. Argo CD and Kro are installed and ready."
 
 # kubectl -n default get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
 kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/crds/applicationset-crd.yaml
-kubectl apply -f ./manifests/bootstrap/application-sets/applicationset.yaml
 
-sleep 60
-sleep 60
+
+kubectl apply -f ./kubernetes/application-sets/applicationset.yaml
+
+sleep 30
 
 # Password & Forward Port
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo

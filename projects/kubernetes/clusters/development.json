@@ -1,0 +1,7 @@
+{
+  "development": 
+  {
+    "name": "development",
+    "server": "https://k8s-cluster1.example.com"
+  }
+}
