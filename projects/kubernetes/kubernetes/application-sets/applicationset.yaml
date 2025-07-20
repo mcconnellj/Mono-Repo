@@ -29,7 +29,7 @@ spec:
         targetRevision: '{{ .application.version }}'
         helm:
           valueFiles:
-          - $values/projects/kubernetes/applications/{{ .chart.name }}/values.yaml
+          - $values/projects/kubernetes/applications/{{ .application.name }}/values.yaml
       - repoURL: https://github.com/mcconnellj/Mono-Repo.git
         targetRevision: main
         ref: values   # This maps $values to this repo root for Helm value files
