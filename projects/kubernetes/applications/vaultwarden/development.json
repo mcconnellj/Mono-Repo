@@ -1,5 +1,5 @@
 {
-  "chart": {
+  "application": {
     "name": "vaultwarden",
     "version": "1.2.5",
     "repository": "https://gissilabs.github.io/charts/"

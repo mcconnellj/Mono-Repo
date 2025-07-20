@@ -10,10 +10,10 @@ spec:
   - matrix:
       generators:
       - git:
-          repoURL: https://gitlab.com/your-name/your-repo.git
-          revision: HEAD
+          repoURL: https://github.com/mcconnellj/Mono-Repo.git
+          revision: main
           files:
-          - path: "/applications/vaultwarden/*.json"
+          - path: "projects/kubernetes/applications/vaultwarden/*.json"
       - clusters:
           selector:
             matchLabels:
@@ -22,13 +22,13 @@ spec:
     spec:
       project: default
       sources:
-      - chart: {{ .chart.name }}
-        repoURL: {{ .chart.repository }}
-        targetRevision: {{ .chart.version }}
+      - chart: {{ .application.name }}
+        repoURL: {{ .application.repository }}
+        targetRevision: {{ .application.version }}
         helm:
           valueFiles:
-          - "$values/projects/kubernetes/applications/{{ .chart.name }}/values.yaml"
-      - repoURL: 'https://github.com/mcconnellj/Mono-Repo.git'
+          - $values/projects/kubernetes/applications/{{ .chart.name }}/values.yaml
+      - repoURL: https://github.com/mcconnellj/Mono-Repo.git
         targetRevision: main
         ref: values   # This maps $values to this repo root for Helm value files
         # path: ""    # Optional: ensure this source is not used to render manifests by itself
