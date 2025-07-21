@@ -8,34 +8,27 @@ echo "🚀 Step 2: Starting a fresh Minikube cluster..."
 minikube start
 
 echo "⏳ Step 3: Waiting for Kubernetes API to become available..."
-sleep 30
+sleep 10
 
 # kubectl -n default get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
-kubectl create namespace argocd
+
+
+
+kubectl apply -f ./kubernetes/namespaces.yaml
+kubectl apply -f ./kubernetes/secrets.yaml
+kubectl apply -f ./kubernetes/projects.yaml
+sleep 10
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/crds/applicationset-crd.yaml
-
-
-kubectl apply -f ./kubernetes/application-sets/applicationset.yaml
-
-sleep 30
+sleep 10
+kubectl apply -f ./kubernetes/applicationsets.yaml
+sleep 10
 
 # Password & Forward Port
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo
 kubectl port-forward service/argocd-server -n argocd 8080:443
 
-# kubectl get ingress test-app -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
-
-# helm install my-n8n oci://8gears.container-registry.com/library/n8n --version 1.0.10
-
-# helm repo add community-charts https://community-charts.github.io/helm-charts
-# helm install my-actualbudget community-charts/actualbudget --version 1.7.2
-
-# helm repo add gissilabs https://gissilabs.github.io/charts/
-# helm install my-vaultwarden gissilabs/vaultwarden --version 1.2.5
-
-# #xz -d -c your-image.tar.xz > your-image.tar
-
+htpasswd -bnBC 10 "" 'MyStrongPassword' | tr -d ':\n'
 
 # set -euo pipefail
 

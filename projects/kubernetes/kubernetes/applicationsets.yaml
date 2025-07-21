@@ -21,6 +21,8 @@ spec:
   template:
     metadata: 
       name: '{{ .application.name }}'
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
     spec:
       project: default
       sources:
