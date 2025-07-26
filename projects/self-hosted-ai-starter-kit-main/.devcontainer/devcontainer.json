@@ -1,0 +1,16 @@
+{
+  "dockerComposeFile": "docker-compose.yaml",
+  "service": "devcontainer",
+  "shutdownAction": "stopCompose",
+  "forwardPorts": [6333, 5678],
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "saoudrizwan.claude-dev",
+        "esbenp.prettier-vscode",
+        "ms-azuretools.vscode-containers"
+      ]
+    }
+  }
+}
