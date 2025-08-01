@@ -10,17 +10,39 @@ minikube start
 echo "⏳ Step 3: Waiting for Kubernetes API to become available..."
 sleep 10
 
+# Create namespace if not already present
+kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
+
+# Hash the password
+HASHED_PASSWORD=$(htpasswd -nbBC 10 "" "$PASSWORD" | tr -d ':\n' | sed 's/^..//')
+PASSWORD_MTIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+# Generate random server secret key
+SERVER_SECRET=$(openssl rand -base64 32)
+
+# Generate self-signed cert
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout tls.key -out tls.crt \
+  -subj "/CN=argocd" >/dev/null 2>&1
+
+kubectl create secret generic argocd-secret \
+  --namespace argocd \
+  --from-literal=admin.password="$HASHED_PASSWORD" \
+  --from-literal=admin.passwordMtime="$PASSWORD_MTIME" \
+  --from-literal=server.secretkey="$SERVER_SECRET" \
+  --from-file=tls.crt=./tls.crt \
+  --from-file=tls.key=./tls.key \
+  --label=cluster.example.com/label=true
+
 # kubectl -n default get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
 
-
-
 kubectl apply -f ./kubernetes/namespaces.yaml
-kubectl apply -f ./kubernetes/secrets.yaml
-kubectl apply -f ./kubernetes/projects.yaml
 sleep 10
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/crds/applicationset-crd.yaml
 sleep 10
+kubectl apply -f ./kubernetes/secrets.yaml
+kubectl apply -f ./kubernetes/projects.yaml
 kubectl apply -f ./kubernetes/applicationsets.yaml
 sleep 10
 
@@ -28,7 +50,23 @@ sleep 10
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo
 kubectl port-forward service/argocd-server -n argocd 8080:443
 
-htpasswd -bnBC 10 "" 'MyStrongPassword' | tr -d ':\n'
+helm install my-actualbudget community-charts/actualbudget --version 1.8.0
+
+helm repo add community-charts https://community-charts.github.io/helm-charts
+
+helm repo add gissilabs https://gissilabs.github.io/charts/
+
+helm install my-vaultwarden gissilabs/vaultwarden --version 1.2.5
+
+helm install my-n8n oci://8gears.container-registry.com/library/n8n --version 1.0.10
+
+helm repo add geek-cookbook https://geek-cookbook.github.io/charts/
+
+helm install my-foundryvtt geek-cookbook/foundryvtt --version 3.4.2
+
+helm repo add bitnami https://charts.bitnami.com/bitnami
+
+helm install my-keycloak bitnami/keycloak --version 24.8.1
 
 # set -euo pipefail
 

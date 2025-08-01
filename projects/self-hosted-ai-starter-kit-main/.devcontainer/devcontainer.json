@@ -1,16 +1,42 @@
 {
-  "dockerComposeFile": "docker-compose.yaml",
-  "service": "devcontainer",
-  "shutdownAction": "stopCompose",
-  "forwardPorts": [6333, 5678],
-  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
+	"name": "Kubernetes - Minikube-in-Docker",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	"image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "customizations": {
     "vscode": {
       "extensions": [
         "saoudrizwan.claude-dev",
         "esbenp.prettier-vscode",
         "ms-azuretools.vscode-containers"
-      ]
+      ],
+      "settings": {
+        "editor.formatOnSave": true
+      }
     }
-  }
+  },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "workspaceFolder": "/workspace",
+  "postStartCommand": ".devcontainer/install.sh"
+  // "runArgs": [
+    // "--env-file",
+    // "./.devcontainer/.env",
+    // "--privileged" 
+  // ],
+  // "forwardPorts": [4245, 8080, 8081, 6443]
+	
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "kubectl version",
+
+	// Use 'postStartCommand' to run commands after the container is created like starting minikube.
+	// "postStartCommand": "nohup bash -c 'minikube start &' > minikube.log 2>&1",
+
+	// Configure tool-specific properties.
+	// "customizations": {},
+
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
 }

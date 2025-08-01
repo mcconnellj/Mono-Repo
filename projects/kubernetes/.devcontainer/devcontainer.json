@@ -32,7 +32,7 @@
   },
   // "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
   // "workspaceFolder": "/workspace",
-  "postStartCommand": "./scripts/post-start.sh"
+  "postStartCommand": ".devcontainer/post-start.sh"
   // "runArgs": [
     // "--env-file",
     // "./.devcontainer/.env",

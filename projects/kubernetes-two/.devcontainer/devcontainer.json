@@ -1,0 +1,9 @@
+{
+  "name": "Ubuntu w/systemd",
+  "build": {
+	"dockerfile": "Dockerfile"
+  },
+  "overrideCommand": false,
+  "privileged": true,
+  "postCreateCommand": "sudo systemctl start k3s && export KUBECONFIG=/etc/rancher/k3s/k3s.yaml && cilium install --version 1.18.0 --set=ipam.operator.clusterPoolIPv4PodCIDRList=\"10.42.0.0/16\""
+}
