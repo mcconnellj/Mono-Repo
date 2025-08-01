@@ -1,3 +1,6 @@
 [submodule "pprojects/kubernetes"]
 	path = pprojects/kubernetes
 	url = git@github.com:mcconnellj/kubernetes.git
+[submodule "projects/kubernetes"]
+	path = projects/kubernetes
+	url = git@github.com:mcconnellj/kubernetes.git
