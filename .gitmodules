@@ -4,3 +4,6 @@
 [submodule "projects/kubernetes"]
 	path = projects/kubernetes
 	url = git@github.com:mcconnellj/kubernetes.git
+[submodule "docs/vault"]
+	path = docs/vault
+	url = git@github.com:mcconnellj/vault.git
